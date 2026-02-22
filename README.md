@@ -179,17 +179,6 @@ BT Speaker  ──► Bluetooth A2DP  ──► PulseAudio Sink
 | **Rotation** | 90° counter-clockwise (software) |
 | **Night Vision** | Yes — IR-sensitive sensor for low-light monitoring |
 
-### GPIO Button
-
-| Parameter | Value |
-|-----------|-------|
-| **Pin** | GPIO 17 (configurable via `--pin` or `GPIO_PIN` env) |
-| **Library** | gpiozero |
-| **Pull Resistor** | Internal pull-up enabled |
-| **Hardware Debounce** | 50ms (`bounce_time=0.05`) |
-| **Software Debounce** | 300ms sleep after each press |
-| **Cooldown** | 5-second lockout between pipeline triggers |
-
 ### Audio Pipeline
 
 ```
