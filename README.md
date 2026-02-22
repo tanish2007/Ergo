@@ -12,7 +12,6 @@
   <img src="https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?logo=google&logoColor=white" alt="Gemini">
   <img src="https://img.shields.io/badge/ElevenLabs-TTS-000000?logo=elevenlabs" alt="ElevenLabs">
   <img src="https://img.shields.io/badge/Raspberry_Pi-5-C51A4A?logo=raspberrypi&logoColor=white" alt="Raspberry Pi">
-  <img src="https://img.shields.io/license/MIT" alt="License">
 </p>
 
 ---
