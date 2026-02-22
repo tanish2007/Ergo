@@ -96,31 +96,17 @@ ERGO maps medical landmarks from pose keypoints for precise first-aid guidance:
 
 ## Tech Stack
 
-```mermaid
-flowchart LR
-    subgraph Pi [🟤 Raspberry Pi 5]
-        CAM[📷 NoIR Camera]
-        BTN[🔘 GPIO Button]
-        SPK[🔊 Bluetooth Speaker]
-    end
-
-    subgraph Laptop [💻 Laptop / PC]
-        OCV[🖼️ OpenCV]
-        YOLO[🦴 YOLOv8n-Pose]
-        GEM[✨ Gemini 2.5 Flash]
-        TTS[🗣️ ElevenLabs TTS]
-    end
-
-    CAM -- MJPEG Stream --> OCV
-    BTN -- GPIO Trigger --> GEM
-    OCV --> YOLO
-    YOLO -- Distress Detected --> GEM
-    GEM -- First-Aid Text --> TTS
-    TTS -- MP3 Audio --> SPK
-
-    style Pi fill:#f9e2e2,stroke:#c51a4a,color:#000
-    style Laptop fill:#e2ecf9,stroke:#4285f4,color:#000
-```
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Pose Estimation** | YOLOv8n-Pose (Ultralytics) | Real-time body keypoint detection (~12ms inference) |
+| **Scene Analysis** | Google Gemini 2.5 Flash | Multimodal AI for emergency scene understanding |
+| **Text-to-Speech** | ElevenLabs Multilingual v2 | Natural voice synthesis for medical instructions |
+| **Edge Device** | Raspberry Pi 5 | Camera capture, GPIO input, Bluetooth audio output |
+| **Camera** | Pi NoIR Camera Module | Night-capable video streaming |
+| **Audio Output** | Bluetooth Speaker via PulseAudio | Wireless audio playback |
+| **Connectivity** | Paramiko (SSH/SFTP) | Persistent, low-latency Pi communication |
+| **Computer Vision** | OpenCV | Frame processing, MJPEG decoding, display |
+| **Hardware Input** | GPIO Button (gpiozero) | Physical panic/trigger button |
 
 ---
 
