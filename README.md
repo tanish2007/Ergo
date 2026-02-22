@@ -129,15 +129,107 @@ ERGO/
 
 ---
 
+## Hardware Architecture
+
+### Components
+
+| Component | Model / Spec | Role |
+|-----------|-------------|------|
+| **Single-Board Computer** | Raspberry Pi 5 | Edge device — camera capture, GPIO input, Bluetooth audio output |
+| **Camera** | Pi NoIR Camera Module v2 | Night-vision capable, infrared-sensitive MJPEG streaming |
+| **Panic Button** | Tactile push button on GPIO 17 | Physical trigger for AI guidance pipeline |
+| **Audio Output** | Bluetooth speaker via PulseAudio | Wireless alarm and voice guidance playback |
+| **Processing Unit** | Laptop/PC (GPU recommended) | Runs YOLOv8 pose inference, Gemini API, ElevenLabs TTS |
+
+### Wiring Diagram
+
+```
+Raspberry Pi 5 GPIO Header
+─────────────────────────────────────────
+              3V3  (1) (2)  5V
+            GPIO2  (3) (4)  5V
+            GPIO3  (5) (6)  GND
+            GPIO4  (7) (8)  GPIO14
+              GND  (9) (10) GPIO15
+     ┌───► GPIO17 (11) (12) GPIO18
+     │    GPIO27 (13) (14) GND
+     │    GPIO22 (15) (16) GPIO23
+     │      3V3 (17) (18) GPIO24
+     │    GPIO10 (19) (20) GND
+     │
+     │    ┌──────────┐
+     └────┤  Button   ├──── GND (Pin 9)
+          └──────────┘
+          (internal pull-up enabled)
+
+NoIR Camera ──► CSI Ribbon Cable ──► Pi Camera Port
+BT Speaker  ──► Bluetooth A2DP  ──► PulseAudio Sink
+```
+
+### Camera Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| **Sensor** | Sony IMX219 NoIR (no infrared filter) |
+| **Resolution** | 640x480 (default, configurable) |
+| **Frame Rate** | 15 FPS (default, configurable) |
+| **Codec** | MJPEG (Motion JPEG) |
+| **Stream Tool** | `rpicam-vid` (native Pi camera stack) |
+| **Transport** | MJPEG over SSH pipe |
+| **Rotation** | 90° counter-clockwise (software) |
+| **Night Vision** | Yes — IR-sensitive sensor for low-light monitoring |
+
+### GPIO Button
+
+| Parameter | Value |
+|-----------|-------|
+| **Pin** | GPIO 17 (configurable via `--pin` or `GPIO_PIN` env) |
+| **Library** | gpiozero |
+| **Pull Resistor** | Internal pull-up enabled |
+| **Hardware Debounce** | 50ms (`bounce_time=0.05`) |
+| **Software Debounce** | 300ms sleep after each press |
+| **Cooldown** | 5-second lockout between pipeline triggers |
+
+### Audio Pipeline
+
+```
+┌────────────┐     SFTP      ┌─────────────┐    PulseAudio    ┌──────────────────┐
+│   Laptop   │ ──────────► │  Raspberry   │ ──────────────► │    Bluetooth     │
+│            │  .mp3 file   │    Pi 5      │   -o pulse       │     Speaker      │
+│ ElevenLabs │              │   mpg123     │                  │  (A2DP Sink)     │
+│    TTS     │              │              │                  │                  │
+└────────────┘              └─────────────┘                  └──────────────────┘
+```
+
+- **Player:** `mpg123` with `-o pulse` for PulseAudio routing
+- **Alarm:** Pre-generated `alarm.mp3` — uploaded once at startup, loops continuously during alert state
+- **Guidance:** Dynamically generated MP3 via ElevenLabs, uploaded per-event via SFTP
+- **Latency:** No re-upload needed for alarm — only guidance audio transfers per trigger
+
+### Edge-Cloud Split
+
+| Runs on Pi | Runs on Laptop |
+|-----------|---------------|
+| Camera capture (`rpicam-vid`) | YOLOv8n-Pose inference (~12ms) |
+| GPIO button listener | Distress detection logic |
+| Audio playback (`mpg123`) | Gemini 2.5 Flash scene analysis |
+| Bluetooth audio routing | ElevenLabs TTS generation |
+| | OpenCV frame processing |
+
+> The Pi handles all I/O (camera, button, speaker) while the laptop handles all compute (ML inference, API calls). Communication is over a single persistent SSH connection via Paramiko, eliminating the ~3s handshake overhead per operation.
+
+---
+
 ## Prerequisites
 
 ### Hardware
 
 - **Raspberry Pi 5** with Raspberry Pi OS
-- **Pi NoIR Camera Module** (or standard Pi Camera)
-- **Bluetooth Speaker** (paired and connected via PulseAudio)
-- **Push Button** connected to GPIO 17 (with pull-up resistor)
-- **Laptop/PC** with Python 3.10+ and GPU recommended
+- **Pi NoIR Camera Module v2** — connected via CSI ribbon cable
+- **Bluetooth Speaker** — paired and connected via PulseAudio (A2DP profile)
+- **Tactile Push Button** — connected between GPIO 17 and GND (internal pull-up used)
+- **Jumper Wires** — for button to GPIO header connection
+- **Laptop/PC** — Python 3.10+, GPU recommended for real-time YOLOv8 inference
 
 ### Raspberry Pi Setup
 
@@ -272,4 +364,4 @@ python pipeline.py --mode once --image test_photo.jpg --text-only
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
-Copyright (c) 2026 Rudra Patel
+Copyright (c) 2026 Ergo
