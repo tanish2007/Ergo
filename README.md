@@ -1,6 +1,6 @@
 <p align="center">
   <h1 align="center">ERGO</h1>
-  <p align="center"><b>Economical Responsive Ground Observant</b></p>
+  <p align="center"><b>Emergency Responsive Ground Observer</b></p>
   <p align="center">
     Real-time distress detection and emergency guidance system powered by computer vision and AI
   </p>
@@ -338,16 +338,6 @@ python pipeline.py --mode once --image test_photo.jpg --text-only
 - **5s Button Cooldown** — Prevents duplicate pipeline triggers from accidental presses
 - **Pre-generated Alarm** — Static MP3 avoids API calls during emergencies
 
----
-
-## API Rate Limits
-
-| Service | Free Tier Limit | Retry Strategy |
-|---------|----------------|----------------|
-| Gemini 2.5 Flash | 20 requests/day | Auto-retry with 15s/30s/45s backoff |
-| ElevenLabs | 10,000 chars/month | Pre-generated alarm to minimize usage |
-
----
 
 ## License
 
